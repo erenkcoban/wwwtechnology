@@ -1,16 +1,4 @@
 body {
   margin: 0;
-  background: linear-gradient(135deg, #eef2ff, #f8fafc);
   font-family: Arial, sans-serif;
-}
-
-.app-card {
-  border-radius: 20px;
-}
-
-.generated-image {
-  max-height: 500px;
-  width: 100%;
-  object-fit: cover;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }

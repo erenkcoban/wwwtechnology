@@ -1,94 +1,72 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import OpenAI from 'openai';
-import { Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import ImageGeneratorForm from './components/ImageGeneratorForm';
+import Loader from './components/Loader';
+import ImageDisplay from './components/ImageDisplay';
 import './App.css';
+
+const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
+const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
+
+function getClient() {
+  return new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true
+  });
+}
 
 function App() {
   const [prompt, setPrompt] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const generateImage = async () => {
-    if (!prompt.trim()) {
-      setError('Please enter a prompt.');
-      return;
-    }
+    if (!prompt) return;
 
-    setIsLoading(true);
-    setError('');
+    setLoading(true);
     setImageUrl('');
 
     try {
-      const client = new OpenAI({
-        apiKey: process.env.REACT_APP_AZURE_OPENAI_API_KEY,
-        dangerouslyAllowBrowser: true,
-      });
+      const client = getClient();
+      console.log('Generating image with prompt:', prompt);
 
-      const result = await client.images.generate({
-        model: process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME,
+      const results = await client.images.generate({
         prompt: prompt,
+        model: deploymentName,
         size: '1024x1024',
+        n: 1,
+        quality: 'low'
       });
 
-      const base64Image = result.data[0].b64_json;
-      setImageUrl(`data:image/png;base64,${base64Image}`);
+      const image_base64 = results.data[0].b64_json;
+      console.log('Received image data (base64):', image_base64);
+
+      const mime = 'image/png';
+
+      const image_src = image_base64.startsWith('data:')
+        ? image_base64
+        : `data:${mime};base64,${image_base64}`;
+
+      setImageUrl(image_src);
     } catch (err) {
       console.error(err);
-      setError('Image generation failed. Check your API key, deployment name, and prompt.');
-    } finally {
-      setIsLoading(false);
+      alert('Failed to generate image.');
     }
+
+    setLoading(false);
   };
 
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md={8} lg={7}>
-          <Card className="shadow-lg border-0 app-card">
-            <Card.Body className="p-4">
-              <h1 className="text-center mb-3">AI Image Generator</h1>
-              <p className="text-center text-muted mb-4">
-                Enter a prompt and generate an image with gpt-image-1.
-              </p>
-
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Prompt</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Example: a futuristic city at sunset"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                  />
-                </Form.Group>
-
-                <div className="d-grid">
-                  <Button variant="primary" onClick={generateImage} disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Spinner animation="border" size="sm" className="me-2" />
-                        Generating...
-                      </>
-                    ) : (
-                      'Generate Image'
-                    )}
-                  </Button>
-                </div>
-              </Form>
-
-              {error && <div className="alert alert-danger mt-4 mb-0">{error}</div>}
-
-              {imageUrl && (
-                <div className="mt-4 text-center">
-                  <img src={imageUrl} alt="Generated result" className="generated-image img-fluid rounded" />
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+    <div className="min-vh-100 bg-light text-center py-4 px-2">
+      <h1 className="h2 fw-bold mb-4">AI Image Generator with OpenAI</h1>
+      <ImageGeneratorForm
+        prompt={prompt}
+        setPrompt={setPrompt}
+        onGenerate={generateImage}
+      />
+      {loading && <Loader />}
+      {imageUrl && <ImageDisplay url={imageUrl} />}
+    </div>
   );
 }
 
