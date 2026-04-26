@@ -1,12 +1,17 @@
+import { db_initialize_create } from "./db.js";
+import itemRoutes from "./routes/items.js";
+import authRoutes from "./routes/auth.js";
 import express from "express";
 import dotenv from 'dotenv'
-import { db_initialize_create } from "./db.js";
 dotenv.config()
 
 const app = express()
 app.use(express.json());
 
 const port = process.env.PORT || 3000
+
+app.use("/items", itemRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
