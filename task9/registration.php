@@ -1,77 +1,83 @@
+<?php
+    include 'db_connection.php';
+    $id = $number = $firstName = $lastName = $departmentId = $position = $salary = $hireDate = '';
+    include 'get_employee.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Register Employee</title>
+  <title>Employee Registration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body>
   <div class="container my-5">
-    <h2 class="mb-4">Register Employee</h2>
-
-    <form>
-        <div class="row g-3">
-            <div class="col-sm-12 col-md-6 col-lg-3">
-                <label for="id" class="form-label">ID</label>
-                <input type="text" class="form-control" id="id" placeholder="Enter the ID">
+    <h2 class="mb-4">Employee Registration</h2>
+    <div class="card shadow">
+        <div class="card-body">
+          <form action="process_employee.php" method="POST">
+            <input type="hidden" name="id" value="<?php echo $id; ?>">
+            <div class="row g-3 mb-3">
+                <div class="col-sm-12 col-md-6 col-lg-6">
+                    <label for="empNumber" class="form-label">Employee Number</label>
+                    <input type="text" class="form-control" id="empNumber" name="empNumber" value="<?php echo $number; ?>" placeholder="EMP12345" required>
+                </div>
+                <div class="col-sm-12 col-md-6 col-lg-6">
+                    <label for="department" class="form-label">Department</label>
+                    <select class="form-select" id="department" name="department" required>
+                      <option disabled <?php if(empty($departmentId)) echo 'selected'; ?>>Choose...</option> 
+                      <?php
+                        try {
+                            $query = "SELECT Id, Name FROM Department";
+                            $stmt = $pdo->query($query);
+                            while ($department = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                                $selected = ($department['Id'] == $departmentId) ? 'selected' : '';
+                                echo "<option value='{$department['Id']}' $selected>{$department['Name']}</option>";
+                            }
+                        } catch (PDOException $e) {
+                            echo "<option value=''>Error loading departments</option>";
+                        }
+                      ?>                  
+                    </select>
+                </div>
             </div>
-
-            <div class="col-sm-12 col-md-6 col-lg-3">
-                <label for="empNumber" class="form-label">Employee Number</label>
-                <input type="text" class="form-control" id="empNumber" placeholder="EMP12345">
+            <div class="row g-3 mb-3">
+                <div class="col-sm-12 col-md-6 col-lg-6">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="firstName" name="firstName" value="<?php echo $firstName; ?>" placeholder="Enter first name" required>
+                </div>
+                <div class="col-sm-12 col-md-6 col-lg-6">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" value="<?php echo $lastName; ?>" placeholder="Enter last name" required>
+                </div>
             </div>
-
-            <div class="col-sm-12 col-md-6 col-lg-3">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="firstName" placeholder="Enter first name">
+            <div class="row g-3 mb-3">
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                    <label for="position" class="form-label">Position</label>
+                    <input type="text" class="form-control" id="position" name="position" value="<?php echo $position; ?>" placeholder="Enter position" required>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                    <label for="salary" class="form-label">Salary ($)</label>
+                    <input type="number" step="0.01" class="form-control" id="salary" name="salary" value="<?php echo $salary; ?>" placeholder="e.g., 50000" required>
+                </div>
+                <div class="col-sm-12 col-md-4 col-lg-4">
+                    <label for="hireDate" class="form-label">Hire Date</label>
+                    <input type="date" class="form-control" id="hireDate" name="hireDate" value="<?php echo $hireDate; ?>" required>
+                </div>
             </div>
-            
-            <div class="col-sm-12 col-md-6 col-lg-3">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="lastName" placeholder="Enter last name">
+            <div class="d-flex justify-content-between mt-4">
+              <a href="list.php" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-person-check-fill"></i> Save Employee
+              </button>
             </div>
-                        
-            <div class="col-sm-12 col-md-6 col-lg-6">
-                <label for="department" class="form-label">Department</label>
-                <select class="form-select" id="department">
-                <option selected disabled>Choose...</option>
-                <option value="1">HR</option>
-                <option value="2">IT</option>
-                <option value="3">Finance</option>
-                <option value="4">Marketing</option>
-                </select>
-            </div>
-            
-            <div class="col-sm-12 col-md-6 col-lg-6">
-                <label for="position" class="form-label">Position</label>
-                <select class="form-select" id="position">
-                <option selected disabled>Select position</option>
-                <option value="1">Manager</option>
-                <option value="2">Engineer</option>
-                <option value="3">Analyst</option>
-                <option value="4">Intern</option>
-                </select>
-            </div>
-            
-            <div class="col-sm-12 col-md-6 col-lg-4">
-                <label for="salary" class="form-label">Salary</label>
-                <input type="number" class="form-control" id="salary" placeholder="e.g., 50000">
-            </div>
-            
-            <div class="col-sm-12 col-md-6 col-lg-4">
-                <label for="hireDate" class="form-label">Hire Date</label>
-                <input type="date" class="form-control" id="hireDate">
-            </div>
-  
+          </form>
         </div>
-      
-        <button type="submit" class="btn btn-primary mt-3">Register Employee</button>
-    </form>
-
     </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous":></script>
+  </div>
 </body>
 </html>
